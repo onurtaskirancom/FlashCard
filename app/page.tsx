@@ -1,103 +1,117 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect, useCallback } from 'react';
+import Flashcard from '@/components/Flashcard';
+import { words, Word } from '@/lib/words';
+
+export default function HomePage() {
+  const [currentWord, setCurrentWord] = useState<Word | null>(null);
+  const [seenWordIds, setSeenWordIds] = useState<number[]>([]);
+  const [allWordsSeen, setAllWordsSeen] = useState(false);
+  const [isInitialLoadPending, setIsInitialLoadPending] = useState(true); // Added for initial load management
+
+  const getNextWord = useCallback(() => {
+    const unseenWords = words.filter((word) => !seenWordIds.includes(word.id));
+
+    if (unseenWords.length === 0) {
+      setAllWordsSeen(true);
+      setCurrentWord(null); // Ensure currentWord is null when all words are seen
+      return;
+    }
+
+    setAllWordsSeen(false); // Ensure this is set before picking a new word
+    const randomIndex = Math.floor(Math.random() * unseenWords.length);
+    const nextWord = unseenWords[randomIndex];
+    setCurrentWord(nextWord);
+    
+    const newSeenWordIds = [...seenWordIds, nextWord.id];
+    setSeenWordIds(newSeenWordIds);
+    localStorage.setItem('seenFlashcardIds', JSON.stringify(newSeenWordIds));
+  }, [seenWordIds]);
+
+  // Load seen IDs from localStorage on mount
+  useEffect(() => {
+    const storedSeenIds = localStorage.getItem('seenFlashcardIds');
+    if (storedSeenIds) {
+      setSeenWordIds(JSON.parse(storedSeenIds));
+    }
+    setIsInitialLoadPending(false); // Mark initial load as complete
+  }, []); // Runs once on mount
+
+  // Effect to get the next word
+  useEffect(() => {
+    if (isInitialLoadPending) {
+      return; // Wait for initial load of seenWordIds
+    }
+
+    // Define the core logic for getting the next word here to avoid useCallback complexities
+    // leading to infinite loops when getNextWord is a dependency and also modifies its own deps.
+    const fetchAndSetNextWord = () => {
+      const unseenWords = words.filter((word) => !seenWordIds.includes(word.id));
+
+      if (unseenWords.length === 0) {
+        setAllWordsSeen(true);
+        setCurrentWord(null);
+        return;
+      }
+
+      setAllWordsSeen(false);
+      const randomIndex = Math.floor(Math.random() * unseenWords.length);
+      const nextWord = unseenWords[randomIndex];
+      setCurrentWord(nextWord);
+      
+      const newSeenWordIds = [...seenWordIds, nextWord.id];
+      setSeenWordIds(newSeenWordIds);
+      localStorage.setItem('seenFlashcardIds', JSON.stringify(newSeenWordIds));
+    };
+
+    if (!currentWord && !allWordsSeen) {
+      fetchAndSetNextWord();
+    }
+  }, [isInitialLoadPending, currentWord, allWordsSeen, seenWordIds]); // Depend on seenWordIds directly for this effect's logic
+
+
+  const handleNextWord = () => {
+    // getNextWord (the useCallback version) can still be used for explicit actions
+    getNextWord();
+  };
+  
+  const handleReset = () => {
+    localStorage.setItem('seenFlashcardIds', JSON.stringify([]));
+    setSeenWordIds([]);
+    setAllWordsSeen(false);
+    setCurrentWord(null); // Crucial: set currentWord to null to trigger the useEffect for fetching a new word
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    <main className="flex min-h-screen flex-col items-center justify-start px-2 py-4 bg-white dark:bg-gray-800 text-black dark:text-gray-100 transition-colors duration-300">
+      <div className="flex flex-col items-center w-full"> {/* Removed px-4 */}
+        {allWordsSeen ? (
+          <div className="text-center p-6 bg-gray-100 dark:bg-gray-700 rounded-lg shadow-xl w-full"> {/* Ensured w-full */}
+            <p className="text-2xl sm:text-3xl font-semibold mb-6">Tüm kelimeleri gördünüz!</p>
+            <button
+              onClick={handleReset}
+              className="w-full px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-lg font-medium" // w-full for mobile
+            >
+              Baştan Başla
+            </button>
+          </div>
+        ) : currentWord ? (
+          <div className="flex flex-col items-center w-full"> {/* Wrapper for flashcard and button to ensure centering and full width */}
+            <div className="w-full perspective"> {/* Added perspective class for 3D */}
+              <Flashcard word={currentWord} />
+            </div>
+            <button
+              onClick={handleNextWord}
+              className="w-full mt-8 px-8 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-lg font-medium" // w-full for mobile
+            >
+              Sonraki
+            </button>
+          </div>
+        ) : (
+          <p className="text-xl sm:text-2xl text-gray-400 dark:text-gray-500">Kelimeler yükleniyor...</p>
+        )}
+      </div>
+    </main>
   );
 }

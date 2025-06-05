@@ -1,6 +1,5 @@
 'use client'; // Required for useState and useEffect
 
-import type { Metadata } from "next"; // Keep for potential static metadata
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { useState, useEffect } from "react";

@@ -22,6 +22,11 @@ export const words: Word[] = [
   { id: 13, english: "School", turkish: "Okul", level: "A1" },
   { id: 14, english: "Car", turkish: "Araba", level: "A1" },
   { id: 15, english: "Big", turkish: "Büyük", level: "A1" },
+  { id: 91, english: "Apple", turkish: "Elma", level: "A1" },
+  { id: 92, english: "Red", turkish: "Kırmızı", level: "A1" },
+  { id: 93, english: "Small", turkish: "Küçük", level: "A1" },
+  { id: 94, english: "Man", turkish: "Adam", level: "A1" },
+  { id: 95, english: "Woman", turkish: "Kadın", level: "A1" },
 
   // A2 Level
   { id: 16, english: "Friend", turkish: "Arkadaş", level: "A2" },
@@ -39,6 +44,11 @@ export const words: Word[] = [
   { id: 28, english: "Sometimes", turkish: "Bazen", level: "A2" },
   { id: 29, english: "Never", turkish: "Asla", level: "A2" },
   { id: 30, english: "Weather", turkish: "Hava durumu", level: "A2" },
+  { id: 96, english: "City", turkish: "Şehir", level: "A2" },
+  { id: 97, english: "Country", turkish: "Ülke", level: "A2" },
+  { id: 98, english: "Music", turkish: "Müzik", level: "A2" },
+  { id: 99, english: "Read", turkish: "Okumak", level: "A2" },
+  { id: 100, english: "Write", turkish: "Yazmak", level: "A2" },
 
   // B1 Level
   { id: 31, english: "Understand", turkish: "Anlamak", level: "B1" },
@@ -56,6 +66,11 @@ export const words: Word[] = [
   { id: 43, english: "Knowledge", turkish: "Bilgi", level: "B1" },
   { id: 44, english: "Opinion", turkish: "Fikir", level: "B1" },
   { id: 45, english: "Problem", turkish: "Sorun", level: "B1" },
+  { id: 101, english: "Education", turkish: "Eğitim", level: "B1" },
+  { id: 102, english: "Health", turkish: "Sağlık", level: "B1" },
+  { id: 103, english: "Journey", turkish: "Yolculuk", level: "B1" },
+  { id: 104, english: "Decision", turkish: "Karar", level: "B1" },
+  { id: 105, english: "Explain", turkish: "Açıklamak", level: "B1" },
 
   // B2 Level
   { id: 46, english: "Achieve", turkish: "Başarmak", level: "B2" },
@@ -73,6 +88,11 @@ export const words: Word[] = [
   { id: 58, english: "Benefit", turkish: "Fayda", level: "B2" },
   { id: 59, english: "Disadvantage", turkish: "Dezavantaj", level: "B2" },
   { id: 60, english: "Improve", turkish: "Geliştirmek", level: "B2" },
+  { id: 106, english: "Significant", turkish: "Önemli / Anlamlı", level: "B2" },
+  { id: 107, english: "Consider", turkish: "Dikkate almak / Düşünmek", level: "B2" },
+  { id: 108, english: "Impact", turkish: "Etki / Vuruş", level: "B2" },
+  { id: 109, english: "Global", turkish: "Küresel", level: "B2" },
+  { id: 110, english: "Strategy", turkish: "Strateji", level: "B2" },
 
   // C1 Level
   { id: 61, english: "Sophisticated", turkish: "Sofistike / Gelişmiş", level: "C1" },
@@ -90,6 +110,11 @@ export const words: Word[] = [
   { id: 73, english: "Paradigm", turkish: "Paradigma / Model", level: "C1" },
   { id: 74, english: "Hypothesis", turkish: "Hipotez / Varsayım", level: "C1" },
   { id: 75, english: "Intrinsic", turkish: "İçsel / Asıl", level: "C1" },
+  { id: 111, english: "Comprehensive", turkish: "Kapsamlı", level: "C1" },
+  { id: 112, english: "Subsequently", turkish: "Sonradan / Akabinde", level: "C1" },
+  { id: 113, english: "Inherent", turkish: "Doğasında var olan", level: "C1" },
+  { id: 114, english: "Fluctuate", turkish: "Dalgalanmak", level: "C1" },
+  { id: 115, english: "Contemplate", turkish: "Derin düşünmek / Tasarlamak", level: "C1" },
 
   // C2 Level
   { id: 76, english: "Erudite", turkish: "Alim / Çok bilgili", level: "C2" },
@@ -106,7 +131,12 @@ export const words: Word[] = [
   { id: 87, english: "Egalitarian", turkish: "Eşitlikçi", level: "C2" },
   { id: 88, english: "Pragmatic", turkish: "Pratik / Faydacı", level: "C2" },
   { id: 89, english: "Sycophant", turkish: "Dalkavuk", level: "C2" },
-  { id: 90, english: "Vicarious", turkish: "Başkası adına yaşanan / Dolaylı", level: "C2" }
+  { id: 90, english: "Vicarious", turkish: "Başkası adına yaşanan / Dolaylı", level: "C2" },
+  { id: 116, english: "Abstruse", turkish: "Anlaşılması güç / Derin", level: "C2" },
+  { id: 117, english: "Capricious", turkish: "Kaprisli / Değişken", level: "C2" },
+  { id: 118, english: "Disparate", turkish: "Ayrı / Farklı", level: "C2" },
+  { id: 119, english: "Salient", turkish: "Dikkat çeken / Belirgin", level: "C2" },
+  { id: 120, english: "Taciturn", turkish: "Suskun / Az konuşan", level: "C2" }
 ];
 
 export type LevelGroup = "A1-A2" | "B1-B2" | "C1-C2";

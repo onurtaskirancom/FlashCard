@@ -1,42 +1,48 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Word } from '@/lib/words';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Word } from "../lib/words";
 
 interface FlashcardProps {
   word: Word;
 }
 
-export default function Flashcard({ word }: FlashcardProps) {
+const Flashcard: React.FC<FlashcardProps> = ({ word }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const handleClick = () => {
+  const handleFlip = () => {
     setIsFlipped(!isFlipped);
   };
 
   return (
-    <motion.div
-      className="block w-full h-72 rounded-lg shadow-xl cursor-pointer"
-      onClick={handleClick}
-      animate={{ rotateY: isFlipped ? 180 : 0 }}
-      transition={{ duration: 0.6 }}
-      style={{ transformStyle: 'preserve-3d' }} // Added transformStyle to main rotating div
+    <div
+      className="w-full h-64 sm:h-72 md:h-80 perspective cursor-pointer group"
+      onClick={handleFlip}
     >
-      {/* Front of the card */}
-      <div
-        className="absolute w-full h-full flex items-center justify-center bg-blue-700 text-white rounded-lg backface-hidden transition-colors duration-300 p-3 sm:p-4"
-        style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }} // Added inline backface-visibility
-      >
-        <p className="text-base sm:text-2xl font-bold text-center break-words">{word.english}</p>
-      </div>
-      {/* Back of the card */}
       <motion.div
-        className="absolute w-full h-full flex items-center justify-center bg-green-700 text-white rounded-lg backface-hidden transition-colors duration-300 p-3 sm:p-4"
-        style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }} // Added inline backface-visibility
+        className="relative w-full h-full preserve-3d"
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ duration: 0.6 }}
       >
-        <p className="text-base sm:text-2xl font-bold text-center break-words">{word.turkish}</p>
+        {/* Front of the card (English) */}
+        <div className="absolute w-full h-full backface-hidden bg-sky-700 rounded-xl shadow-2xl flex flex-col items-center justify-center p-6 text-center">
+          <p className="text-xs text-sky-200 mb-2">English ({word.level})</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+            {word.english}
+          </h2>
+        </div>
+
+        {/* Back of the card (Turkish) */}
+        <div className="absolute w-full h-full backface-hidden bg-teal-600 rounded-xl shadow-2xl flex flex-col items-center justify-center p-6 text-center rotate-y-180">
+          <p className="text-xs text-teal-200 mb-2">Turkish</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+            {word.turkish}
+          </h2>
+        </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
-}
+};
+
+export default Flashcard;

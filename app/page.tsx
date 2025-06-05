@@ -1,116 +1,151 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import Flashcard from '@/components/Flashcard';
-import { words, Word } from '@/lib/words';
+import { useState, useEffect, useCallback } from "react";
+import { words, levelGroups, Word, LevelGroup } from "../lib/words";
+import Flashcard from "../components/Flashcard";
 
 export default function HomePage() {
+  const [selectedLevelGroup, setSelectedLevelGroup] = useState<LevelGroup | null>(null);
+  const [currentWords, setCurrentWords] = useState<Word[]>([]);
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
-  const [seenWordIds, setSeenWordIds] = useState<number[]>([]);
-  const [allWordsSeen, setAllWordsSeen] = useState(false);
-  const [isInitialLoadPending, setIsInitialLoadPending] = useState(true); // Added for initial load management
+  const [lastSeenWordId, setLastSeenWordId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const getNextWord = useCallback(() => {
-    const unseenWords = words.filter((word) => !seenWordIds.includes(word.id));
-
-    if (unseenWords.length === 0) {
-      setAllWordsSeen(true);
-      setCurrentWord(null); // Ensure currentWord is null when all words are seen
-      return;
-    }
-
-    setAllWordsSeen(false); // Ensure this is set before picking a new word
-    const randomIndex = Math.floor(Math.random() * unseenWords.length);
-    const nextWord = unseenWords[randomIndex];
-    setCurrentWord(nextWord);
-    
-    const newSeenWordIds = [...seenWordIds, nextWord.id];
-    setSeenWordIds(newSeenWordIds);
-    localStorage.setItem('seenFlashcardIds', JSON.stringify(newSeenWordIds));
-  }, [seenWordIds]);
-
-  // Load seen IDs from localStorage on mount
+  // Load state from localStorage
   useEffect(() => {
-    const storedSeenIds = localStorage.getItem('seenFlashcardIds');
-    if (storedSeenIds) {
-      setSeenWordIds(JSON.parse(storedSeenIds));
-    }
-    setIsInitialLoadPending(false); // Mark initial load as complete
-  }, []); // Runs once on mount
+    const storedLevelGroup = localStorage.getItem("flashcardLevelGroup") as LevelGroup | null;
+    const storedLastSeenWordId = localStorage.getItem("flashcardLastSeenWordId");
 
-  // Effect to get the next word
-  useEffect(() => {
-    if (isInitialLoadPending) {
-      return; // Wait for initial load of seenWordIds
-    }
-
-    // Define the core logic for getting the next word here to avoid useCallback complexities
-    // leading to infinite loops when getNextWord is a dependency and also modifies its own deps.
-    const fetchAndSetNextWord = () => {
-      const unseenWords = words.filter((word) => !seenWordIds.includes(word.id));
-
-      if (unseenWords.length === 0) {
-        setAllWordsSeen(true);
-        setCurrentWord(null);
-        return;
+    if (storedLevelGroup) {
+      setSelectedLevelGroup(storedLevelGroup);
+      const group = levelGroups.find(lg => lg.name === storedLevelGroup);
+      if (group) {
+        const filtered = words.filter(word => group.levels.includes(word.level));
+        setCurrentWords(filtered);
+        if (storedLastSeenWordId) {
+          const lastWord = filtered.find(w => w.id === parseInt(storedLastSeenWordId));
+          setCurrentWord(lastWord || filtered[0] || null);
+          setLastSeenWordId(lastWord ? lastWord.id : null);
+        } else if (filtered.length > 0) {
+          setCurrentWord(filtered[0]);
+          setLastSeenWordId(filtered[0].id);
+          localStorage.setItem("flashcardLastSeenWordId", filtered[0].id.toString());
+        }
       }
-
-      setAllWordsSeen(false);
-      const randomIndex = Math.floor(Math.random() * unseenWords.length);
-      const nextWord = unseenWords[randomIndex];
-      setCurrentWord(nextWord);
-      
-      const newSeenWordIds = [...seenWordIds, nextWord.id];
-      setSeenWordIds(newSeenWordIds);
-      localStorage.setItem('seenFlashcardIds', JSON.stringify(newSeenWordIds));
-    };
-
-    if (!currentWord && !allWordsSeen) {
-      fetchAndSetNextWord();
     }
-  }, [isInitialLoadPending, currentWord, allWordsSeen, seenWordIds]); // Depend on seenWordIds directly for this effect's logic
+    setIsLoading(false);
+  }, []);
 
+  // Save state to localStorage
+  useEffect(() => {
+    if (selectedLevelGroup) {
+      localStorage.setItem("flashcardLevelGroup", selectedLevelGroup);
+    }
+  }, [selectedLevelGroup]);
 
-  const handleNextWord = () => {
-    // getNextWord (the useCallback version) can still be used for explicit actions
-    getNextWord();
+  useEffect(() => {
+    if (currentWord) {
+      localStorage.setItem("flashcardLastSeenWordId", currentWord.id.toString());
+      setLastSeenWordId(currentWord.id);
+    }
+  }, [currentWord]);
+
+  const handleLevelSelect = (levelGroup: LevelGroup) => {
+    setSelectedLevelGroup(levelGroup);
+    const group = levelGroups.find(lg => lg.name === levelGroup);
+    if (group) {
+      const filtered = words.filter(word => group.levels.includes(word.level));
+      setCurrentWords(filtered);
+      if (filtered.length > 0) {
+        setCurrentWord(filtered[0]);
+      } else {
+        setCurrentWord(null);
+      }
+    }
   };
-  
-  const handleReset = () => {
-    localStorage.setItem('seenFlashcardIds', JSON.stringify([]));
-    setSeenWordIds([]);
-    setAllWordsSeen(false);
-    setCurrentWord(null); // Crucial: set currentWord to null to trigger the useEffect for fetching a new word
-  };
+
+  const showNextWord = useCallback(() => {
+    if (currentWords.length === 0) return;
+
+    let availableWords = currentWords;
+    if (lastSeenWordId !== null) {
+      availableWords = currentWords.filter(word => word.id !== lastSeenWordId);
+    }
+    
+    if (availableWords.length === 0) { // All words in current level seen, or only one word
+        if (currentWords.length > 0) { // If there are words, pick one (even if it's the last seen)
+            const randomIndex = Math.floor(Math.random() * currentWords.length);
+            setCurrentWord(currentWords[randomIndex]);
+        } else {
+            setCurrentWord(null); // No words available
+        }
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * availableWords.length);
+    setCurrentWord(availableWords[randomIndex]);
+  }, [currentWords, lastSeenWordId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-900">
+        <p className="text-xl text-slate-50">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!selectedLevelGroup) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-4">
+        <h1 className="text-4xl font-bold text-slate-50 mb-8 text-center">Choose Your English Level</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-2xl">
+          {levelGroups.map((group) => (
+            <button
+              key={group.name}
+              onClick={() => handleLevelSelect(group.name)}
+              className="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition-colors duration-150 text-xl"
+            >
+              {group.name}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start px-2 py-4 bg-white dark:bg-gray-800 text-black dark:text-gray-100 transition-colors duration-300">
-      <div className="flex flex-col items-center w-full"> {/* Removed px-4 */}
-        {allWordsSeen ? (
-          <div className="text-center p-6 bg-gray-100 dark:bg-gray-700 rounded-lg shadow-xl w-full"> {/* Ensured w-full */}
-            <p className="text-2xl sm:text-3xl font-semibold mb-6">Tüm kelimeleri gördünüz!</p>
-            <button
-              onClick={handleReset}
-              className="w-full px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-lg font-medium" // w-full for mobile
-            >
-              Baştan Başla
-            </button>
-          </div>
-        ) : currentWord ? (
-          <div className="flex flex-col items-center w-full"> {/* Wrapper for flashcard and button to ensure centering and full width */}
-            <div className="w-full perspective"> {/* Added perspective class for 3D */}
-              <Flashcard word={currentWord} />
-            </div>
-            <button
-              onClick={handleNextWord}
-              className="w-full mt-8 px-8 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-lg font-medium" // w-full for mobile
-            >
-              Sonraki
-            </button>
-          </div>
+    <main className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 bg-slate-900">
+      <div className="w-full max-w-md">
+        <button
+            onClick={() => {
+                localStorage.removeItem("flashcardLevelGroup");
+                localStorage.removeItem("flashcardLastSeenWordId");
+                setSelectedLevelGroup(null);
+                setCurrentWord(null);
+                setLastSeenWordId(null);
+            }}
+            className="absolute top-4 left-4 bg-amber-600 hover:bg-amber-500 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-colors duration-150 text-sm"
+        >
+            Change Level
+        </button>
+        {currentWord ? (
+          <Flashcard word={currentWord} />
         ) : (
-          <p className="text-xl sm:text-2xl text-gray-400 dark:text-gray-500">Kelimeler yükleniyor...</p>
+          <div className="flex items-center justify-center h-64 bg-slate-800 rounded-xl shadow-2xl">
+            <p className="text-xl text-slate-300">No words available for this level.</p>
+          </div>
         )}
+        {currentWords.length > 1 && currentWord && ( // Show next button only if there are multiple words
+          <button
+            onClick={showNextWord}
+            className="mt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors duration-150 text-lg"
+          >
+            Next Word
+          </button>
+        )}
+         {currentWords.length <= 1 && currentWord && (
+             <p className="text-center mt-8 text-slate-400">This is the only word in this level group.</p>
+         )}
       </div>
     </main>
   );

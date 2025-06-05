@@ -2,33 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-.perspective {
-  perspective: 1000px;
-}
-
-.backface-hidden {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden; /* Safari */
-}
-
-:root {
-  /* Keeping dark theme variables, removing light theme variables */
-  --background-dark: #1f2937; /* Dark Slate Gray */
-  --foreground-dark: #f3f4f6; /* Light Gray for text */
-  --card-background-dark: #374151; /* Medium Slate Gray for cards */
-  --button-background-dark: #6366f1; /* Lighter Indigo for dark mode */
-  --button-text-dark: #ffffff;
-}
-
 body {
-  /* Default to dark theme styles */
-  background: var(--background-dark);
-  color: var(--foreground-dark);
-  transition: background-color 0.3s ease, color 0.3s ease; /* Keep transition for smoothness if needed elsewhere */
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
 }
 
-/* .btn-primary can be simplified if only dark mode is used, or keep for consistency */
-.btn-primary {
-  background-color: var(--button-background-dark);
-  color: var(--button-text-dark);
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .perspective {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; /* Safari */
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
 }

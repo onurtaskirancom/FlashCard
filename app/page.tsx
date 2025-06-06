@@ -205,6 +205,7 @@ export default function HomePage() {
 
 
   const handleWordReview = (wordId: number, quality: number) => { 
+    console.log("handleWordReview called", wordId, quality);
     const srsData = JSON.parse(JSON.stringify(allSrsWordData[wordId] || getSrsDataForWord(wordId, allSrsWordData)));
 
 
@@ -225,7 +226,7 @@ export default function HomePage() {
 
     let sm2_q = 0;
     if (quality === 0) sm2_q = 0; 
-    else if (quality === 1) sm2_q = 2; 
+    else if (quality === 1) sm2_q = 1; 
     else if (quality === 2) sm2_q = 4; 
     else if (quality === 3) sm2_q = 5; 
 
@@ -233,14 +234,14 @@ export default function HomePage() {
 
     const reviewDate = new Date();
     reviewDate.setHours(0,0,0,0);
-    if (srsData.interval > 0) { // Only add interval if it's not for same-day review
-        reviewDate.setDate(reviewDate.getDate() + srsData.interval);
-    }
+    reviewDate.setDate(reviewDate.getDate() + 3); // Set review date 3 days in the future
     srsData.reviewDate = reviewDate.toISOString().split('T')[0];
+    srsData.interval = Math.max(3, srsData.interval);
 
     saveSrsDataForWord(wordId, srsData);
     const updatedAllSrsData = { ...allSrsWordData, [wordId]: srsData };
-    setAllSrsWordData(updatedAllSrsData); 
+    setAllSrsWordData(updatedAllSrsData);
+    setCurrentWord(prev => prev ? {...prev} : null);
   };
 
 
